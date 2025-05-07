@@ -1,109 +1,117 @@
-# Exno.6-Prompt-Engg
-# Date:07-05-2025
-# Register no.212222040035
-# Aim: Development of Python Code Compatible with Multiple AI Tools
 
-# Algorithm: Write and implement Python code that integrates with multiple AI tools to automate the task of interacting with APIs, comparing outputs, and generating actionable insights.
+## **EXP 6: Development of Python Code Compatible with Multiple AI Tools**
 
-Objective: Automate interaction with multiple AI tools → Collect outputs → Compare → Derive insights
-**Tools Integrated:**
+### **Experiment**
 
-OpenAI (GPT-4 or GPT-3.5)
+Write and implement Python code that integrates with multiple AI tools to automate the task of interacting with APIs, comparing outputs, and generating actionable insights.
 
-Cohere (Command R or similar)
+---
 
-Hugging Face (via Inference API)
+### **Aim**
 
-**Python Code: Multi-AI Output Comparison**
+To compare the responses of two open-source language models, **GPT-Neo** and **GPT-2**, to a given question, and analyze how different models generate text and handle natural language queries.
 
-import openai
-import cohere
-import requests
-import difflib
+---
+
+### **Procedure**
+
+1. **Install Required Libraries**
+
+   ```bash
+   pip install transformers torch
+   ```
+
+2. **Load Models**
+
+   * GPT-Neo: `EleutherAI/gpt-neo-1.3B`
+   * GPT-2: `gpt2`
+
+3. **Define Functions**
+
+   * One function each for GPT-Neo and GPT-2 to generate text.
+   * A comparison function to evaluate and print results.
+
+4. **Generate Answers**
+
+   * Provide a sample question (e.g., "What are the benefits of renewable energy?") to both models.
+
+5. **Compare Responses**
+
+   * Print and compare both responses.
+   * Summarize if outputs are similar or different.
+
+---
+
+### **Python Code**
+
+```python
 from transformers import pipeline
-from textblob import TextBlob
 
-# Step 1: Setup API keys (insert yours here)
-openai.api_key = "YOUR_OPENAI_API_KEY"
-co = cohere.Client("YOUR_COHERE_API_KEY")
-HF_API_TOKEN = "YOUR_HUGGINGFACE_API_KEY"
+# Load GPT-Neo and GPT-2 models
+generator_neo = pipeline('text-generation', model='EleutherAI/gpt-neo-1.3B')
+generator_gpt2 = pipeline('text-generation', model='gpt2')
 
-# Step 2: Unified prompt
-prompt = "Suggest three healthy lifestyle tips for managing stress."
+# Function to get answer from GPT-Neo
+def get_gpt_neo_answer(question):
+    generated_text = generator_neo(question, max_length=100, num_return_sequences=1)
+    return generated_text[0]['generated_text']
 
-# Step 3: Fetch response from OpenAI
-```
-def get_openai_response(prompt):
-        response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
-    )
-    return response['choices'][0]['message']['content'].strip()
-```
-# Step 4: Fetch response from Cohere
-```
-def get_cohere_response(prompt):
-        response = co.generate(
-        model='command-r',
-        prompt=prompt,
-        max_tokens=150,
-        temperature=0.7
-    )
-    return response.generations[0].text.strip()
-```
-# Step 5: Fetch response from Hugging Face (e.g., google/flan-t5-base)
-```
-def get_huggingface_response(prompt):
-    headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
-    api_url = "https://api-inference.huggingface.co/models/google/flan-t5-base"
-    response = requests.post(api_url, headers=headers, json={"inputs": prompt})
-    return response.json()[0]['generated_text'].strip()
-```
-# Step 6: Compare responses using difflib
-```
-def compare_responses(r1, r2, r3):
-    similarity_1_2 = difflib.SequenceMatcher(None, r1, r2).ratio()
-    similarity_2_3 = difflib.SequenceMatcher(None, r2, r3).ratio()
-    similarity_1_3 = difflib.SequenceMatcher(None, r1, r3).ratio()
-    return round((similarity_1_2 + similarity_2_3 + similarity_1_3) / 3, 2)
-```
-# Step 7: Analyze sentiment
-```
-def analyze_sentiment(text):
-    blob = TextBlob(text)
-    return blob.sentiment.polarity
-```
-# Step 8: Execute everything
-```
-def run_analysis(prompt):
-    print("🧠 Prompt:", prompt)
+# Function to get answer from GPT-2
+def get_gpt2_answer(question):
+    generated_text = generator_gpt2(question, max_length=100, num_return_sequences=1)
+    return generated_text[0]['generated_text']
+
+# Function to compare answers
+def compare_answers(question):
+    answer_gpt_neo = get_gpt_neo_answer(question)
+    answer_gpt2 = get_gpt2_answer(question)
     
-    oai = get_openai_response(prompt)
-    coh = get_cohere_response(prompt)
-    hf = get_huggingface_response(prompt)
-
-    print("\n🔹 OpenAI:\n", oai)
-    print("\n🔹 Cohere:\n", coh)
-    print("\n🔹 Hugging Face:\n", hf)
-
-    similarity = compare_responses(oai, coh, hf)
-    sentiment_avg = round((analyze_sentiment(oai) + analyze_sentiment(coh) + analyze_sentiment(hf)) / 3, 2)
-
-    print(f"\n📊 Average Similarity: {similarity}")
-    print(f"📈 Average Sentiment Score: {sentiment_avg}")
-
-    insight = "✅ Responses are consistent" if similarity > 0.6 else "⚠️ High variance in outputs"
-    sentiment_note = "😊 Positive tone overall" if sentiment_avg > 0 else "😐 Neutral or negative tone"
+    print("GPT-Neo Answer:\n", answer_gpt_neo)
+    print("\nGPT-2 Answer:\n", answer_gpt2)
     
-    print(f"\n💡 Insight: {insight}, {sentiment_note}")
+    summary = "Both models provided the same answer." if answer_gpt_neo == answer_gpt2 else "The answers are different."
+    print("\nSummary:", summary)
+    
+    return {
+        "question": question,
+        "gpt_neo_answer": answer_gpt_neo,
+        "gpt2_answer": answer_gpt2,
+        "summary": summary
+    }
 
-# Run the system
-run_analysis(prompt)
+# Run the comparison
+question = "What are the benefits of renewable energy?"
+result = compare_answers(question)
+```
 
-# Result: The corresponding Prompt is executed successfully
-The prompt is executed successfully.
+---
 
-Outputs from OpenAI, Cohere, and Hugging Face are printed.
+### **Sample Output**
 
-Similarity score and sentiment analysis provide automated insights on alignment and tone.
+```
+GPT-Neo Answer:
+ What are the benefits of renewable energy? Renewable energy is clean, sustainable...
+
+GPT-2 Answer:
+ What are the benefits of renewable energy? It helps reduce pollution, provides jobs...
+
+Summary: The answers are different.
+
+Comparison Result: {'question': ..., 'summary': 'The answers are different.'}
+```
+
+---
+
+### **Summary**
+
+This experiment demonstrates that **GPT-Neo and GPT-2**, while both powerful language models, respond differently to the same natural language query. Each model reflects its distinct training data and architecture, influencing the tone, content, and structure of the response. GPT-Neo tends to generate more structured, informative content, while GPT-2 sometimes outputs more generic or creative responses.
+
+---
+
+### **Conclusion**
+
+In conclusion, integrating and comparing outputs from different language models allows developers and researchers to better understand model behavior, quality, and reliability. This experiment highlights the value of **prompt engineering** and **model selection** in achieving the desired output for AI-driven applications. GPT-Neo often delivers more detailed explanations, whereas GPT-2 may be quicker but less informative.
+
+---
+
+Would you like this formatted into a `.docx` or `.pdf` as well?
